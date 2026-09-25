@@ -92,14 +92,16 @@ export class Viewport {
   /** Recompose only a region of the document (used while drawing). */
   invalidateRect(r: Rect | null): void {
     if (!r) return;
+    const clipped = intersectRect(r, { x: 0, y: 0, w: this.session.doc.width, h: this.session.doc.height });
+    if (!clipped) return;
     this.pendingRect = this.pendingRect
       ? {
-          x: Math.min(this.pendingRect.x, r.x),
-          y: Math.min(this.pendingRect.y, r.y),
-          w: Math.max(this.pendingRect.x + this.pendingRect.w, r.x + r.w) - Math.min(this.pendingRect.x, r.x),
-          h: Math.max(this.pendingRect.y + this.pendingRect.h, r.y + r.h) - Math.min(this.pendingRect.y, r.y),
+          x: Math.min(this.pendingRect.x, clipped.x),
+          y: Math.min(this.pendingRect.y, clipped.y),
+          w: Math.max(this.pendingRect.x + this.pendingRect.w, clipped.x + clipped.w) - Math.min(this.pendingRect.x, clipped.x),
+          h: Math.max(this.pendingRect.y + this.pendingRect.h, clipped.y + clipped.h) - Math.min(this.pendingRect.y, clipped.y),
         }
-      : { ...r };
+      : { ...clipped };
     this.requestRender();
   }
 
