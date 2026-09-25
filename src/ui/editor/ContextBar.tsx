@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useT } from '../../i18n';
 import * as sel from '../../editor/selectionOps';
 import { tools, useTools } from '../../editor/toolStore';
-import { setUi } from '../../editor/controller';
+import { showPanel } from '../../editor/controller';
 import { useClipboard } from '../../engine/Clipboard';
 import { Menu } from '../components/Menu';
 import { IconButton, NumberInput } from '../components/ui';
@@ -28,7 +28,7 @@ export function ContextBar() {
     return (
       <div className="context-bar" role="toolbar" aria-label={t('tool.transform')} data-testid="transform-bar">
         <IconButton icon={X} label={t('transform.cancel')} onClick={() => s.cancelFloating()} testId="transform-cancel" />
-        {f.kind === 'text' && <IconButton icon={Type} label={t('text.edit')} onClick={() => setUi({ panelTab: 'tool' })} />}
+        {f.kind === 'text' && <IconButton icon={Type} label={t('text.edit')} onClick={() => showPanel('tool')} />}
         <IconButton icon={FlipHorizontal2} label={t('select.flipH')} onClick={() => upd({ sx: -f.t.sx })} />
         <IconButton icon={FlipVertical2} label={t('select.flipV')} onClick={() => upd({ sy: -f.t.sy })} />
         <IconButton icon={RotateCcw} label={t('transform.rotateLeft')} onClick={() => upd({ rotation: f.t.rotation - Math.PI / 2 })} />

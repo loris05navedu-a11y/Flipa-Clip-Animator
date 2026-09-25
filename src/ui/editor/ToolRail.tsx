@@ -3,7 +3,7 @@ import { useT } from '../../i18n';
 import { useTools } from '../../editor/toolStore';
 import type { ToolId } from '../../engine/tools/Tool';
 import { IconButton, type IconType, toCssColor } from '../components/ui';
-import { setUi } from '../../editor/controller';
+import { showPanel } from '../../editor/controller';
 import { useCtrl } from './context';
 import { useSettings } from '../../storage/settings';
 
@@ -45,17 +45,17 @@ export function ToolRail() {
             tipSide={side}
             testId={`tool-${id}`}
             onClick={() => {
-              if (tool === id) setUi({ panelTab: 'tool' });
+              if (tool === id) showPanel('tool');
               ctrl.setTool(id);
             }}
           />
         ))}
       </div>
       <div className="color-stack">
-        <button type="button" className="color-chip secondary" aria-label={t('color.secondary')} data-tip={t('color.secondary')} data-tip-side={side} onClick={() => setUi({ panelTab: 'colors' })}>
+        <button type="button" className="color-chip secondary" aria-label={t('color.secondary')} data-tip={t('color.secondary')} data-tip-side={side} onClick={() => showPanel('colors')}>
           <span style={{ background: toCssColor(secondary) }} />
         </button>
-        <button type="button" className="color-chip primary" aria-label={t('color.primary')} data-tip={t('color.primary')} data-tip-side={side} data-testid="primary-color" onClick={() => setUi({ panelTab: 'colors' })}>
+        <button type="button" className="color-chip primary" aria-label={t('color.primary')} data-tip={t('color.primary')} data-tip-side={side} data-testid="primary-color" onClick={() => showPanel('colors')}>
           <span style={{ background: toCssColor(primary) }} />
         </button>
         <button type="button" className="swap-colors" aria-label={t('color.swap')} data-tip={t('color.swap')} data-tip-side={side} onClick={swap}>

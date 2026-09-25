@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '../storage/safeStorage';
+import { settings } from '../storage/settings';
 import { uid } from '../core/util/id';
 import type { Palette } from '../core/model/types';
 import { DEFAULT_PALETTE_COLORS } from '../core/model/project';
@@ -200,7 +201,8 @@ export const useTools = create<ToolState & ToolActions>()(
       },
       createPreset: (tool, name) => {
         const base = get().activePreset(tool);
-        const p: BrushPreset = { id: uid('br'), name, tool, builtin: false, settings: { ...base.settings } };
+        // New brushes start from the active one, at the default size chosen in the settings.
+        const p: BrushPreset = { id: uid('br'), name, tool, builtin: false, settings: { ...base.settings, size: settings().defaultBrushSize } };
         set((s) => ({ presets: [...s.presets, p], active: { ...s.active, [tool]: p.id } }));
         return p.id;
       },

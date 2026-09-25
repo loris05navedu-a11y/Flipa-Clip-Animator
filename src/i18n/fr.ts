@@ -705,6 +705,7 @@ export const fr: Record<string, string> = {
   'settings.startupHome': "Afficher l'accueil",
   'settings.startupLast': 'Rouvrir le dernier projet',
   'settings.brushSize': 'Taille de pinceau par défaut',
+  'settings.brushSizeHint': 'Utilisée pour les nouveaux pinceaux créés dans la bibliothèque.',
   'settings.smoothing': 'Lissage global',
   'settings.stabilization': 'Stabilisation supplémentaire',
   'settings.pressure': 'Utiliser la pression du stylet',

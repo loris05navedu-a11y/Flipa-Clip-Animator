@@ -11,6 +11,7 @@ import { settings, useSettings } from '../../storage/settings';
 import { backDepth, pushBack } from '../components/back';
 import { toast } from '../components/toast';
 import { IconButton, Progress } from '../components/ui';
+import { useNarrow } from '../components/useMedia';
 import { runAction } from './actions';
 import { CanvasView } from './CanvasView';
 import { ContextBar } from './ContextBar';
@@ -64,6 +65,10 @@ export default function EditorScreen() {
   const compact = useSettings((s) => s.compact);
   const autosaveInterval = useSettings((s) => s.autosaveInterval);
   const setSettings = useSettings((s) => s.set);
+  const narrow = useNarrow();
+  const overlay = useEditorUi((u) => u.panelOverlay);
+  const showSide = narrow ? overlay : panelOpen;
+  const openPanel = () => (narrow ? setUi({ panelOverlay: true }) : setSettings({ sidePanelOpen: true }));
 
   useEffect(() => () => ctrl.dispose(), [ctrl]);
 
@@ -119,7 +124,8 @@ export default function EditorScreen() {
   useEffect(
     () =>
       pushBack(() => {
-        if (useEditorUi.getState().fullscreen) ctrl.toggleFullscreen();
+        if (useEditorUi.getState().panelOverlay) setUi({ panelOverlay: false });
+        else if (useEditorUi.getState().fullscreen) ctrl.toggleFullscreen();
         else if (session.floating) session.cancelFloating();
         else void closeEditor();
         return true;
@@ -180,7 +186,7 @@ export default function EditorScreen() {
     el.addEventListener('pointerup', up);
   };
 
-  const cls = ['editor', fullscreen && 'is-fullscreen', left && 'left-handed', compact && 'compact', !panelOpen && 'panel-closed'].filter(Boolean).join(' ');
+  const cls = ['editor', fullscreen && 'is-fullscreen', left && 'left-handed', compact && 'compact', !showSide && 'panel-closed'].filter(Boolean).join(' ');
 
   return (
     <EditorContext.Provider value={ctrl}>
@@ -193,12 +199,12 @@ export default function EditorScreen() {
             {!fullscreen && <ToolOptionsBar />}
             <ContextBar />
             {fullscreen && <IconButton icon={Minimize} label={t('editor.exitFullscreen')} className="exit-fullscreen" onClick={() => ctrl.toggleFullscreen()} />}
-            {!fullscreen && !panelOpen && <IconButton icon={left ? PanelLeftOpen : PanelRightOpen} label={t('panel.expand')} className="panel-open-btn" onClick={() => setSettings({ sidePanelOpen: true })} />}
+            {!fullscreen && !showSide && <IconButton icon={left ? PanelLeftOpen : PanelRightOpen} label={t('panel.expand')} className="panel-open-btn" onClick={openPanel} testId="panel-open" />}
           </main>
-          {!fullscreen && panelOpen && (
+          {!fullscreen && showSide && (
             <>
-              <div className="panel-resize" onPointerDown={resizePanel} role="separator" aria-orientation="vertical" />
-              <SidePanel />
+              {narrow ? <div className="panel-scrim" onClick={() => setUi({ panelOverlay: false })} aria-hidden /> : <div className="panel-resize" onPointerDown={resizePanel} role="separator" aria-orientation="vertical" />}
+              <SidePanel narrow={narrow} />
             </>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { Layers, Palette, SlidersHorizontal, Eye, Image, PanelRightClose, PanelLeftClose } from 'lucide-react';
 import { useT } from '../../i18n';
 import { setUi, useEditorUi } from '../../editor/controller';
+import { X } from 'lucide-react';
 import { useSettings } from '../../storage/settings';
 import { IconButton } from '../components/ui';
 import { LayersPanel } from './LayersPanel';
@@ -17,7 +18,7 @@ const TABS = [
   { id: 'refs', icon: Image, key: 'panel.refs' },
 ] as const;
 
-export function SidePanel() {
+export function SidePanel({ narrow = false }: { narrow?: boolean }) {
   const t = useT();
   const tab = useEditorUi((u) => u.panelTab);
   const left = useSettings((s) => s.handedness) === 'left';
@@ -40,7 +41,11 @@ export function SidePanel() {
             <span className="tab-label">{t(x.key)}</span>
           </button>
         ))}
-        <IconButton icon={left ? PanelLeftClose : PanelRightClose} small label={t('panel.collapse')} onClick={() => set({ sidePanelOpen: false })} />
+        {narrow ? (
+          <IconButton icon={X} small label={t('common.close')} onClick={() => setUi({ panelOverlay: false })} testId="panel-close" />
+        ) : (
+          <IconButton icon={left ? PanelLeftClose : PanelRightClose} small label={t('panel.collapse')} onClick={() => set({ sidePanelOpen: false })} />
+        )}
       </div>
       <div className="panel-body scroll" role="tabpanel">
         {tab === 'layers' && <LayersPanel />}

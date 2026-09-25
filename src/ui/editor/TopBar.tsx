@@ -1,10 +1,12 @@
 import {
-  ArrowLeftRight, CircleHelp, Clapperboard, Download, FileAudio, FileImage, FileVideo, Grid3x3, History, House, ImagePlus, Images, Layers2, Maximize, Minimize, MoreVertical,
+  ArrowLeftRight, CircleHelp, PanelRight, Clapperboard, Download, FileAudio, FileImage, FileVideo, Grid3x3, History, House, ImagePlus, Images, Layers2, Maximize, Minimize, MoreVertical,
   Redo2, Ruler, Save, Settings2, Undo2, Upload, Frame,
 } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { closeEditor, useApp } from '../../app/store';
-import { setUi, useEditorUi } from '../../editor/controller';
+import { setUi, showPanel, useEditorUi } from '../../editor/controller';
+import { usePhone } from '../components/useMedia';
+import { useSettings } from '../../storage/settings';
 import { useT } from '../../i18n';
 import { pickFiles } from '../../platform/platform';
 import { Menu, useMenu } from '../components/Menu';
@@ -41,6 +43,16 @@ export function TopBar() {
   );
   const [canUndo, canRedo, undoLabel, redoLabel] = hist.split('|');
   const v = s.doc.view;
+  const phone = usePhone();
+  const timelineVisible = useSettings((x) => x.timelineVisible);
+  const importItems = [
+    { label: t('import.image'), icon: FileImage, testId: 'import-image-layer', onClick: async () => { const [f] = await pickFiles('image/*'); if (f) await importImageAsLayer(ctrl, f); } },
+    { label: t('import.imageFloating'), icon: ImagePlus, onClick: async () => { const [f] = await pickFiles('image/*'); if (f) await importImageFloating(ctrl, f); } },
+    { label: t('import.sequence'), icon: Images, onClick: async () => { const fs = await pickFiles('image/*', true); if (fs.length) await importSequence(ctrl, fs); } },
+    { label: t('import.video'), icon: FileVideo, testId: 'import-video', onClick: async () => { const [f] = await pickFiles('video/*'); if (f) openVideoImport(f); } },
+    { label: t('import.audio'), icon: FileAudio, testId: 'import-audio', onClick: async () => { const [f] = await pickFiles('audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus'); if (f) await importAudio(ctrl, f); } },
+    { label: t('import.reference'), icon: ImagePlus, onClick: async () => { const [f] = await pickFiles('image/*'); if (f) await importReference(ctrl, f); } },
+  ];
 
   return (
     <header className="topbar">
@@ -61,9 +73,13 @@ export function TopBar() {
       <IconButton icon={Save} label={`${t('editor.save')} (Ctrl+S)`} onClick={() => void ctrl.save()} testId="save" badge={s.dirty} />
       <div className="sep" />
       <IconButton icon={Layers2} label={t('onion.title')} toggled={v.onion.enabled} onClick={() => ctrl.toggleOnion()} testId="toggle-onion" />
-      <IconButton icon={Grid3x3} label={t('editor.view')} onClick={viewMenu.open} toggled={v.grid.enabled || v.rulers || v.symmetry.mode !== 'off'} />
-      <IconButton icon={Upload} label={t('editor.import')} onClick={importMenu.open} testId="import-menu" />
-      <IconButton icon={Clapperboard} label={t('editor.preview')} onClick={() => (ctrl.stopPlayback(), setUi({ dialog: 'preview' }))} testId="open-preview" />
+      {!phone && (
+        <>
+          <IconButton icon={Grid3x3} label={t('editor.view')} onClick={viewMenu.open} toggled={v.grid.enabled || v.rulers || v.symmetry.mode !== 'off'} />
+          <IconButton icon={Upload} label={t('editor.import')} onClick={importMenu.open} testId="import-menu" />
+          <IconButton icon={Clapperboard} label={t('editor.preview')} onClick={() => (ctrl.stopPlayback(), setUi({ dialog: 'preview' }))} testId="open-preview" />
+        </>
+      )}
       <button type="button" className="btn primary export-btn" onClick={() => (ctrl.stopPlayback(), setUi({ dialog: 'export' }))} data-testid="open-export">
         <Download size={18} aria-hidden />
         <span className="hide-narrow">{t('editor.export')}</span>
@@ -84,31 +100,30 @@ export function TopBar() {
             { label: t('editor.actualSize'), onClick: () => ctrl.setZoom(1), kbd: 'Ctrl+1' },
             { label: t('editor.resetRotation'), icon: ArrowLeftRight, onClick: () => ctrl.resetRotation() },
             'sep',
-            { label: t('view.title') + '…', onClick: () => setUi({ panelTab: 'view' }) },
+            { label: t('view.title') + '…', onClick: () => showPanel('view') },
           ]}
         />
       )}
-      {importMenu.anchor && (
-        <Menu
-          anchor={importMenu.anchor}
-          onClose={importMenu.close}
-          items={[
-            { label: t('import.image'), icon: FileImage, testId: 'import-image-layer', onClick: async () => { const [f] = await pickFiles('image/*'); if (f) await importImageAsLayer(ctrl, f); } },
-            { label: t('import.imageFloating'), icon: ImagePlus, onClick: async () => { const [f] = await pickFiles('image/*'); if (f) await importImageFloating(ctrl, f); } },
-            { label: t('import.sequence'), icon: Images, onClick: async () => { const fs = await pickFiles('image/*', true); if (fs.length) await importSequence(ctrl, fs); } },
-            { label: t('import.video'), icon: FileVideo, testId: 'import-video', onClick: async () => { const [f] = await pickFiles('video/*'); if (f) openVideoImport(f); } },
-            { label: t('import.audio'), icon: FileAudio, testId: 'import-audio', onClick: async () => { const [f] = await pickFiles('audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus'); if (f) await importAudio(ctrl, f); } },
-            { label: t('import.reference'), icon: ImagePlus, onClick: async () => { const [f] = await pickFiles('image/*'); if (f) await importReference(ctrl, f); } },
-          ]}
-        />
-      )}
+      {importMenu.anchor && <Menu anchor={importMenu.anchor} onClose={importMenu.close} items={importItems} />}
       {moreMenu.anchor && (
         <Menu
           anchor={moreMenu.anchor}
           onClose={moreMenu.close}
           items={[
+            ...(phone
+              ? [
+                  { label: t('editor.preview'), icon: Clapperboard, onClick: () => (ctrl.stopPlayback(), setUi({ dialog: 'preview' })) },
+                  { label: t('editor.panel'), icon: PanelRight, onClick: () => showPanel('layers') },
+                  { label: t('view.title') + '…', icon: Grid3x3, onClick: () => showPanel('view') },
+                  'sep' as const,
+                  { title: t('editor.import') },
+                  ...importItems,
+                  'sep' as const,
+                ]
+              : []),
             { label: t('editor.projectSettings'), icon: Settings2, onClick: () => setUi({ dialog: 'projectSettings' }), testId: 'menu-project-settings' },
             { label: t('editor.canvasSize'), icon: Frame, onClick: () => setUi({ dialog: 'resize' }) },
+            { label: t('settings.timelineVisible'), checked: timelineVisible, onClick: () => useSettings.getState().set({ timelineVisible: !timelineVisible }) },
             { label: t('editor.versions'), icon: History, onClick: () => setUi({ dialog: 'versions' }) },
             'sep',
             { label: fullscreen ? t('editor.exitFullscreen') : t('editor.fullscreen'), icon: fullscreen ? Minimize : Maximize, onClick: () => ctrl.toggleFullscreen(), kbd: 'Tab' },

@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { useT } from '../../i18n';
 import { useTools, tools, type ShapeKind, type SelectMode, type SelectOp } from '../../editor/toolStore';
-import { setUi, useEditorUi } from '../../editor/controller';
+import { showPanel, useEditorUi } from '../../editor/controller';
 import * as sel from '../../editor/selectionOps';
 import type { BrushTool } from '../../engine/brush/types';
 import { IconButton, Segmented, SelectInput } from '../components/ui';
@@ -187,7 +187,7 @@ function RefOptions() {
   const refId = useTools((x) => x.referenceId);
   if (!s.doc.references.length)
     return (
-      <button type="button" className="btn small" onClick={() => setUi({ panelTab: 'refs' })}>
+      <button type="button" className="btn small" onClick={() => showPanel('refs')}>
         {t('refs.add')}
       </button>
     );

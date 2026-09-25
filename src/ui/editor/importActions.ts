@@ -4,7 +4,7 @@ import { uid } from '../../core/util/id';
 import { nextTick } from '../../core/util/async';
 import type { AudioClipDef, AudioTrackDef, FrameDef } from '../../core/model/types';
 import type { EditorController } from '../../editor/controller';
-import { setUi } from '../../editor/controller';
+import { setUi, showPanel } from '../../editor/controller';
 import { floatCanvas } from '../../editor/selectionOps';
 import { blobToBitmap, createCanvas, ctx2d, loadImage } from '../../engine/canvas';
 import { decodeAudio } from '../../engine/audio/AudioEngine';
@@ -187,7 +187,7 @@ export async function importReference(ctrl: EditorController, file: File): Promi
     const ref = await ctrl.session.addReference(file, file.name);
     const { tools } = await import('../../editor/toolStore');
     tools().set({ referenceId: ref.id });
-    setUi({ panelTab: 'refs' });
+    showPanel('refs');
   } catch (e) {
     await showError(e, 'error.imageDecode');
   }

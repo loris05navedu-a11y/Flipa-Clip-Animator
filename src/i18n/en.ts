@@ -674,6 +674,7 @@ export const en: Record<string, string> = {
   'settings.startupHome': 'Show home screen',
   'settings.startupLast': 'Reopen last project',
   'settings.brushSize': 'Default brush size',
+  'settings.brushSizeHint': 'Used for new brushes created in the library.',
   'settings.smoothing': 'Global smoothing',
   'settings.stabilization': 'Extra stabilisation',
   'settings.pressure': 'Use stylus pressure',

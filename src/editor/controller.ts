@@ -25,6 +25,8 @@ export interface EditorUi {
   rotation: number;
   busy: string | null;
   progress: number | null;
+  /** Side panel shown over the canvas (narrow screens). */
+  panelOverlay: boolean;
 }
 
 export const useEditorUi = create<EditorUi>(() => ({
@@ -39,10 +41,21 @@ export const useEditorUi = create<EditorUi>(() => ({
   rotation: 0,
   busy: null,
   progress: null,
+  panelOverlay: false,
 }));
 
 export const ui = () => useEditorUi.getState();
 export const setUi = (p: Partial<EditorUi>) => useEditorUi.setState(p);
+
+/** Show a side-panel tab (opens the panel, docked or floating). */
+export function showPanel(tab: EditorUi['panelTab']): void {
+  const narrow = typeof matchMedia === 'function' && matchMedia('(max-width: 900px)').matches;
+  if (narrow) setUi({ panelTab: tab, panelOverlay: true });
+  else {
+    setUi({ panelTab: tab });
+    useSettings.getState().set({ sidePanelOpen: true });
+  }
+}
 
 /**
  * Glue between the session, the viewport, the player and the UI. Every user

@@ -85,7 +85,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   handedness: 'right',
   timelineVisible: true,
   compact: false,
-  timelineHeight: 176,
+  timelineHeight: 200,
   sidePanelWidth: 300,
   sidePanelOpen: true,
   tooltips: true,

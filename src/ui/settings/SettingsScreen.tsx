@@ -199,6 +199,7 @@ export default function SettingsScreen() {
           {section === 'drawing' && (
             <>
               <Slider label={t('settings.brushSize')} value={s.defaultBrushSize} min={1} max={200} unit=" px" onChange={(defaultBrushSize) => s.set({ defaultBrushSize })} />
+              <div className="small muted">{t('settings.brushSizeHint')}</div>
               <Slider label={t('settings.smoothing')} value={s.smoothing} min={0} max={2} step={0.05} scale={100} unit=" %" onChange={(smoothing) => s.set({ smoothing })} />
               <Slider label={t('settings.stabilization')} value={s.stabilization} min={0} max={1} step={0.01} scale={100} unit=" %" onChange={(stabilization) => s.set({ stabilization })} />
               <Toggle label={t('settings.pressure')} checked={s.pressure} onChange={(pressure) => s.set({ pressure })} />

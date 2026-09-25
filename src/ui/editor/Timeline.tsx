@@ -314,18 +314,18 @@ export function Timeline() {
   const playheadX = starts[cur] * unit;
 
   return (
-    <section className="timeline" style={{ height }} aria-label={t('timeline.title')} data-testid="timeline">
+    <section className="timeline" style={{ height: `min(${height}px, 46vh)` }} aria-label={t('timeline.title')} data-testid="timeline">
       <div className="tl-resize" onPointerDown={resize} role="separator" aria-orientation="horizontal" aria-label={t('timeline.title')} />
       <div className="tl-header">
         <div className="tl-transport">
-          <IconButton icon={SkipBack} small label={t('timeline.first')} onClick={() => ctrl.goFrame(0)} />
+          <IconButton icon={SkipBack} small className="hide-phone" label={t('timeline.first')} onClick={() => ctrl.goFrame(0)} />
           <IconButton icon={StepBack} small label={t('timeline.prev')} onClick={() => ctrl.step(-1)} testId="prev-frame" />
           <IconButton icon={playing ? Pause : Play} label={playing ? t('timeline.pause') : t('timeline.play')} active={playing} onClick={() => ctrl.togglePlay()} testId="play" />
           <IconButton icon={Square} small label={t('timeline.stop')} onClick={() => ctrl.stop()} testId="stop" />
           <IconButton icon={StepForward} small label={t('timeline.next')} onClick={() => ctrl.step(1)} testId="next-frame" />
-          <IconButton icon={SkipForward} small label={t('timeline.last')} onClick={() => ctrl.goFrame(doc.frames.length - 1)} />
-          <IconButton icon={Repeat} small label={t('timeline.loop')} toggled={loop} onClick={() => { ctrl.player.loop = !loop; setLoop(!loop); }} />
-          <SelectInput label={t('timeline.speed')} value={speed} onChange={(v) => { ctrl.player.setSpeed(v); setSpeed(v); }} options={SPEEDS.map((x) => ({ value: x, label: `${x}×` }))} />
+          <IconButton icon={SkipForward} small className="hide-phone" label={t('timeline.last')} onClick={() => ctrl.goFrame(doc.frames.length - 1)} />
+          <IconButton icon={Repeat} small className="hide-phone" label={t('timeline.loop')} toggled={loop} onClick={() => { ctrl.player.loop = !loop; setLoop(!loop); }} />
+          <span className="hide-phone"><SelectInput label={t('timeline.speed')} value={speed} onChange={(v) => { ctrl.player.setSpeed(v); setSpeed(v); }} options={SPEEDS.map((x) => ({ value: x, label: `${x}×` }))} /></span>
         </div>
         <div className="tl-info" data-testid="frame-counter">
           <strong>{t('editor.frameCounter', { n: cur + 1, total: doc.frames.length })}</strong>
@@ -341,10 +341,10 @@ export function Timeline() {
           <IconButton icon={Plus} label={t('timeline.addFrame')} onClick={() => (ctrl.stopPlayback(), s.addFrame('after'))} testId="add-frame" />
           <IconButton icon={CopyPlus} label={t('timeline.duplicate')} onClick={() => (ctrl.stopPlayback(), s.duplicateFrames())} testId="duplicate-frame" />
           <IconButton icon={Trash2} label={t('timeline.delete')} onClick={() => void deleteFrames()} testId="delete-frame" />
-          <IconButton icon={Copy} small label={t('timeline.copy')} onClick={async () => { const n = await copyFrames(s, s.targetFrameIds()); toast('timeline.copied', 'info', { n }); }} testId="copy-frames" />
-          <IconButton icon={ClipboardPaste} small label={t('timeline.paste')} disabled={!clipboard.frames} onClick={async () => { const n = await pasteFrames(s); if (n) toast('timeline.pasted', 'info', { n }); }} testId="paste-frames" />
-          <IconButton icon={ChevronsLeft} small label={t('timeline.moveLeft')} disabled={cur === 0 && !selCount} onClick={() => s.shiftFrames(-1)} />
-          <IconButton icon={ChevronsRight} small label={t('timeline.moveRight')} onClick={() => s.shiftFrames(1)} />
+          <IconButton icon={Copy} small label={t('timeline.copy')} onClick={async () => { const n = await copyFrames(s, s.targetFrameIds()); toast('timeline.copied', 'info', { n }); }} testId="copy-frames" className="hide-medium" />
+          <IconButton icon={ClipboardPaste} small label={t('timeline.paste')} disabled={!clipboard.frames} onClick={async () => { const n = await pasteFrames(s); if (n) toast('timeline.pasted', 'info', { n }); }} testId="paste-frames" className="hide-medium" />
+          <IconButton icon={ChevronsLeft} small className="hide-medium" label={t('timeline.moveLeft')} disabled={cur === 0 && !selCount} onClick={() => s.shiftFrames(-1)} />
+          <IconButton icon={ChevronsRight} small className="hide-medium" label={t('timeline.moveRight')} onClick={() => s.shiftFrames(1)} />
           <div className="hold-ctl" title={t('timeline.hold')}>
             <IconButton icon={Minus} small label={t('timeline.holdMinus')} disabled={(frame?.hold ?? 1) <= 1} onClick={() => s.setHold((frame?.hold ?? 1) - 1)} testId="hold-minus" />
             <span className="small" data-testid="hold-value">{t('timeline.holdValue', { n: frame?.hold ?? 1 })}</span>
@@ -352,8 +352,8 @@ export function Timeline() {
           </div>
           <IconButton icon={ListChecks} small label={t('timeline.selectMode')} toggled={multi} onClick={() => { setUi({ multiSelect: !multi }); if (multi) s.clearFrameSelection(); }} testId="multi-select" />
           <IconButton icon={Layers} small label={t('timeline.layers')} toggled={showLayers} onClick={() => setUi({ timelineLayers: !showLayers })} testId="timeline-layers" />
-          <IconButton icon={FileAudio} small label={t('audio.import')} onClick={async () => { const [f] = await pickFiles('audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus'); if (f) await importAudio(ctrl, f); }} />
-          <input type="range" className="tl-zoom hide-narrow" min={16} max={160} value={unit} aria-label={t('timeline.zoom')} style={{ ['--fill' as string]: `${((unit - 16) / 144) * 100}%` }} onChange={(e) => setUnit(parseInt(e.target.value, 10))} />
+          <IconButton icon={FileAudio} small className="hide-medium" label={t('audio.import')} onClick={async () => { const [f] = await pickFiles('audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus'); if (f) await importAudio(ctrl, f); }} />
+          <input type="range" className="tl-zoom hide-medium" min={16} max={160} value={unit} aria-label={t('timeline.zoom')} style={{ ['--fill' as string]: `${((unit - 16) / 144) * 100}%` }} onChange={(e) => setUnit(parseInt(e.target.value, 10))} />
           {selCount > 0 && <span className="chip on small" style={{ minHeight: 26 }}>{t('timeline.selected', { n: selCount })}</span>}
         </div>
       </div>
