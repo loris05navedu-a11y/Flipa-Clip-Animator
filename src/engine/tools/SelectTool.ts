@@ -133,6 +133,10 @@ export class SelectTool implements Tool {
     this.moving = null;
   }
 
+  deactivate(): void {
+    this.host.session.setSelection(null);
+  }
+
   drawOverlay(ctx: CanvasRenderingContext2D, vp: Viewport): void {
     if (!this.pts) return;
     const mode = tools().select.mode;
