@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useT } from '../../i18n';
-import { pushBack } from './back';
+import { isTopBack, pushBack } from './back';
 import { IconButton } from './ui';
 
 interface DialogProps {
@@ -24,12 +24,23 @@ export function Dialog({ title, onClose, children, footer, size = 'normal', test
     const prev = document.activeElement as HTMLElement | null;
     const first = ref.current?.querySelector<HTMLElement>('input, select, textarea, button:not(.icon-btn)');
     (first ?? ref.current)?.focus({ preventScroll: true });
-    const off = pushBack(() => {
+    const handler = () => {
       if (closeRef.current && !modal) closeRef.current();
       return true;
-    });
+    };
+    const off = pushBack(handler);
+    // Escape closes the top-most dialog wherever the focus is.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isTopBack(handler)) {
+        e.stopPropagation();
+        e.preventDefault();
+        handler();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
     return () => {
       off();
+      window.removeEventListener('keydown', onKey, true);
       prev?.focus?.({ preventScroll: true });
     };
   }, [modal]);
@@ -48,12 +59,6 @@ export function Dialog({ title, onClose, children, footer, size = 'normal', test
         aria-modal="true"
         aria-label={typeof title === 'string' ? title : undefined}
         data-testid={testId}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && !modal) {
-            e.stopPropagation();
-            onClose?.();
-          }
-        }}
       >
         <div className="dialog-head">
           <h2>{title}</h2>

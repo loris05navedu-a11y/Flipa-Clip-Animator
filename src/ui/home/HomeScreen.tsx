@@ -297,7 +297,7 @@ export function HomeScreen() {
           }}
         />
       )}
-      {trashOpen && <TrashDialog onClose={() => (setTrashOpen(false), void refresh())} />}
+      {trashOpen && <TrashDialog onClose={() => (setTrashOpen(false), void refresh())} onChanged={() => void refresh()} />}
       {versionsFor && <VersionsDialog meta={versionsFor} onClose={() => setVersionsFor(null)} />}
     </div>
   );

@@ -24,3 +24,8 @@ export function runBack(): boolean {
 export function backDepth(): number {
   return stack.length;
 }
+
+/** True when `h` is the most recently registered handler. */
+export function isTopBack(h: Handler): boolean {
+  return stack[stack.length - 1] === h;
+}

@@ -7,10 +7,13 @@ import { Dialog } from '../components/Dialog';
 import { dialogs } from '../components/dialogs';
 import { Button, IconButton } from '../components/ui';
 
-export function TrashDialog({ onClose }: { onClose: () => void }) {
+export function TrashDialog({ onClose, onChanged }: { onClose: () => void; onChanged?: () => void }) {
   const t = useT();
   const [items, setItems] = useState<ProjectMeta[]>([]);
-  const refresh = async () => setItems(await (await getRepo()).listTrash());
+  const refresh = async () => {
+    setItems(await (await getRepo()).listTrash());
+    onChanged?.();
+  };
   useEffect(() => {
     void refresh();
   }, []);

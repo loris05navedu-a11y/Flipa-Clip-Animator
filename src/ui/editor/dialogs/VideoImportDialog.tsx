@@ -124,7 +124,7 @@ export default function VideoImportDialog() {
         s.change('history.import', layers !== s.doc.layers ? { layers, frames } : { frames }, { layerId, frameIndex: first });
         if (keepAudio) {
           const startSec = frames.slice(0, first).reduce((a, f) => a + f.hold, 0) / s.doc.fps;
-          const clip = await importAudio(ctrl, file, startSec).catch(() => null);
+          const clip = await importAudio(ctrl, file, startSec, true).catch(() => null);
           if (clip) {
             // Trim the clip to the imported range.
             const audio = s.doc.audio.map((tr) => ({ ...tr, clips: tr.clips.map((c) => (c.id === clip.id ? { ...c, offset: start, duration: Math.min(end - start, c.sourceDuration - start) } : c)) }));

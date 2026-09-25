@@ -101,9 +101,10 @@ test.describe('frames & timeline', () => {
     await cells.nth(1).click({ modifiers: ['Shift'] });
     expect(await sessionEval<number>(page, 's.frameSelection.size')).toBe(2);
     await page.getByTestId('copy-frames').click();
+    await expectToast(page, '2 image(s) copiée(s)');
     await cells.nth(3).click();
     await page.getByTestId('paste-frames').click();
-    expect(await frameCount(page)).toBe(6);
+    await expect.poll(() => frameCount(page)).toBe(6);
     expect(await inked(page, 4)).toBe(await inked(page, 0));
     await cells.nth(4).click();
     await cells.nth(5).click({ modifiers: ['Shift'] });

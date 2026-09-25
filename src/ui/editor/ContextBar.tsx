@@ -4,7 +4,7 @@ import { useT } from '../../i18n';
 import * as sel from '../../editor/selectionOps';
 import { tools, useTools } from '../../editor/toolStore';
 import { setUi } from '../../editor/controller';
-import { clipboard } from '../../engine/Clipboard';
+import { useClipboard } from '../../engine/Clipboard';
 import { Menu } from '../components/Menu';
 import { IconButton, NumberInput } from '../components/ui';
 import { useCtrl, useSession } from './context';
@@ -17,6 +17,7 @@ export function ContextBar() {
   const tool = useTools((x) => x.tool);
   const proportional = useTools((x) => x.transform.proportional);
   const [layersAnchor, setLayersAnchor] = useState<HTMLElement | null>(null);
+  const clipboard = useClipboard();
   const f = s.floating;
 
   if (f) {

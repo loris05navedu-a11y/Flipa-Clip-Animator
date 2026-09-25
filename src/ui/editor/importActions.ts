@@ -141,7 +141,7 @@ export async function importSequence(
 }
 
 /** Add an audio file as a clip at the playhead (on the first track, created if needed). */
-export async function importAudio(ctrl: EditorController, file: Blob & { name?: string }, at?: number): Promise<AudioClipDef | null> {
+export async function importAudio(ctrl: EditorController, file: Blob & { name?: string }, at?: number, silent = false): Promise<AudioClipDef | null> {
   const s = ctrl.session;
   if (file.size > MAX_IMPORT_BYTES) {
     toast('misc.fileTooBig', 'error');
@@ -151,7 +151,7 @@ export async function importAudio(ctrl: EditorController, file: Blob & { name?: 
   try {
     buf = await decodeAudio(await file.arrayBuffer());
   } catch (e) {
-    await showError(e, 'error.audioDecode');
+    if (!silent) await showError(e, 'error.audioDecode');
     return null;
   }
   const key = uid('a');

@@ -164,6 +164,7 @@ async function exportVideo(s: EditorSession, audio: AudioEngine, o: ExportOption
   const target = new muxMod.ArrayBufferTarget();
   const muxer = new (muxMod.Muxer as unknown as new (o: unknown) => {
     addVideoChunk(c: EncodedVideoChunk, m?: EncodedVideoChunkMetadata): void;
+    addVideoChunkRaw(d: Uint8Array, type: 'key' | 'delta', ts: number, duration: number, m?: EncodedVideoChunkMetadata): void;
     addAudioChunk(c: EncodedAudioChunk, m?: EncodedAudioChunkMetadata): void;
     finalize(): void;
   })({
@@ -175,8 +176,16 @@ async function exportVideo(s: EditorSession, audio: AudioEngine, o: ExportOption
   });
 
   let failure: unknown = null;
+  const frameUs = 1e6 / o.fps;
   const venc = new VideoEncoder({
-    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    output: (chunk, meta) => {
+      if (container === 'mp4') {
+        // Give every sample an explicit duration so the last frame is not dropped.
+        const data = new Uint8Array(chunk.byteLength);
+        chunk.copyTo(data);
+        muxer.addVideoChunkRaw(data, chunk.type, chunk.timestamp, chunk.duration || Math.round(frameUs), meta);
+      } else muxer.addVideoChunk(chunk, meta);
+    },
     error: (e) => (failure = e),
   });
   const vcfg: VideoEncoderConfig = { codec: choice.codec, width, height, bitrate, framerate: o.fps, latencyMode: 'quality' };
@@ -185,7 +194,6 @@ async function exportVideo(s: EditorSession, audio: AudioEngine, o: ExportOption
   venc.configure(vcfg);
 
   const renderer = new FrameRenderer(s, opts);
-  const frameUs = 1e6 / o.fps;
   const gop = Math.max(1, Math.round(o.fps * 2));
   try {
     for (let i = 0; i < indices.length; i++) {
@@ -228,8 +236,26 @@ async function exportVideo(s: EditorSession, audio: AudioEngine, o: ExportOption
     if (venc.state !== 'closed') venc.close();
   }
   const mime = container === 'mp4' ? 'video/mp4' : 'video/webm';
+  const bytes = new Uint8Array(target.buffer as ArrayBuffer);
+  if (container === 'webm') patchWebmDuration(bytes, (indices.length * 1000) / o.fps);
   onProgress(1);
-  return { blob: new Blob([target.buffer as ArrayBuffer], { type: mime }), name: `${fileBase(s)}.${container}`, mime, codec: choice.label + (mixed ? ` + ${audioCodec!.codec === 'opus' ? 'Opus' : 'AAC'}` : '') };
+  return { blob: new Blob([bytes as BlobPart], { type: mime }), name: `${fileBase(s)}.${container}`, mime, codec: choice.label + (mixed ? ` + ${audioCodec!.codec === 'opus' ? 'Opus' : 'AAC'}` : '') };
+}
+
+/**
+ * webm-muxer writes the timestamp of the last frame as the segment duration;
+ * rewrite the Duration element (ID 0x4489, float64, in ms) to include the
+ * display time of the last frame.
+ */
+export function patchWebmDuration(bytes: Uint8Array, durationMs: number): boolean {
+  const limit = Math.min(bytes.length - 11, 4096);
+  for (let i = 0; i < limit; i++) {
+    if (bytes[i] === 0x44 && bytes[i + 1] === 0x89 && bytes[i + 2] === 0x88) {
+      new DataView(bytes.buffer, bytes.byteOffset + i + 3, 8).setFloat64(0, durationMs);
+      return true;
+    }
+  }
+  return false;
 }
 
 /* ------------------------------- GIF ------------------------------- */

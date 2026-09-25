@@ -14,7 +14,9 @@ import { Thumbnails } from '../../engine/Thumbnails';
 import { ctx2d } from '../../engine/canvas';
 import { useSettings } from '../../storage/settings';
 import { pickFiles } from '../../platform/platform';
-import { clipboard } from '../../engine/Clipboard';
+import { useClipboard } from '../../engine/Clipboard';
+import { copyFrames, pasteFrames } from '../../editor/frameClipboard';
+import { toast } from '../components/toast';
 import { dialogs } from '../components/dialogs';
 import { Menu, type MenuEntry } from '../components/Menu';
 import { IconButton, NumberInput, SelectInput } from '../components/ui';
@@ -90,6 +92,7 @@ export function Timeline() {
   const [peaks, setPeaks] = useState<Record<string, Float32Array>>({});
   const [speed, setSpeed] = useState(ctrl.player.speed);
   const [loop, setLoop] = useState(ctrl.player.loop);
+  const clipboard = useClipboard();
   const doc = s.doc;
   const starts = useMemo(() => frameStarts(doc.frames), [doc.frames]);
   const total = totalTicks(doc.frames);
@@ -338,8 +341,8 @@ export function Timeline() {
           <IconButton icon={Plus} label={t('timeline.addFrame')} onClick={() => (ctrl.stopPlayback(), s.addFrame('after'))} testId="add-frame" />
           <IconButton icon={CopyPlus} label={t('timeline.duplicate')} onClick={() => (ctrl.stopPlayback(), s.duplicateFrames())} testId="duplicate-frame" />
           <IconButton icon={Trash2} label={t('timeline.delete')} onClick={() => void deleteFrames()} testId="delete-frame" />
-          <IconButton icon={Copy} small label={t('timeline.copy')} onClick={async () => { const { copyFrames } = await import('../../editor/frameClipboard'); const n = await copyFrames(s, s.targetFrameIds()); const { toast } = await import('../components/toast'); toast('timeline.copied', 'info', { n }); }} testId="copy-frames" />
-          <IconButton icon={ClipboardPaste} small label={t('timeline.paste')} disabled={!clipboard.frames} onClick={async () => { const { pasteFrames } = await import('../../editor/frameClipboard'); await pasteFrames(s); }} testId="paste-frames" />
+          <IconButton icon={Copy} small label={t('timeline.copy')} onClick={async () => { const n = await copyFrames(s, s.targetFrameIds()); toast('timeline.copied', 'info', { n }); }} testId="copy-frames" />
+          <IconButton icon={ClipboardPaste} small label={t('timeline.paste')} disabled={!clipboard.frames} onClick={async () => { const n = await pasteFrames(s); if (n) toast('timeline.pasted', 'info', { n }); }} testId="paste-frames" />
           <IconButton icon={ChevronsLeft} small label={t('timeline.moveLeft')} disabled={cur === 0 && !selCount} onClick={() => s.shiftFrames(-1)} />
           <IconButton icon={ChevronsRight} small label={t('timeline.moveRight')} onClick={() => s.shiftFrames(1)} />
           <div className="hold-ctl" title={t('timeline.hold')}>
