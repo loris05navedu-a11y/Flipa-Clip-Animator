@@ -79,8 +79,14 @@ export const canSaveToGallery = (): boolean => isNative();
 
 export async function saveToGallery(blob: Blob, name: string, mime: string): Promise<boolean> {
   const uri = await writeCache(blob, name);
-  const r = await Files.saveToGallery({ path: uri, name, mime });
-  return r.saved;
+  try {
+    const r = await Files.saveToGallery({ path: uri, name, mime });
+    return r.saved;
+  } catch (e) {
+    // Android 9 and older: no MediaStore without permission → use the document picker.
+    if (String((e as Error)?.message ?? e).includes('unsupported')) return (await Files.saveAs({ path: uri, name, mime })).saved;
+    throw e;
+  }
 }
 
 /** Open the system file picker. */

@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+      Frameloom works fully offline and asks the user for no permission:
+      files are picked with the system picker, exports are saved through the
+      Storage Access Framework or MediaStore (Android 10+), which need none.
+      INTERNET is an install-time "normal" permission kept only because the
+      Android WebView blocks some local loads without it; the web layer's
+      Content-Security-Policy forbids every request to another origin.
+    -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
         android:theme="@style/AppTheme">
 
         <activity
@@ -15,6 +28,9 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="fullUser"
+            android:resizeableActivity="true"
             android:exported="true">
 
             <intent-filter>
@@ -34,8 +50,4 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
     </application>
-
-    <!-- Permissions -->
-
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

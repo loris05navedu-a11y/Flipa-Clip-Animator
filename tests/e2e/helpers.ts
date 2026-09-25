@@ -75,11 +75,9 @@ export async function inked(page: Page, frame?: number): Promise<number> {
   return page.evaluate((f) => (window as unknown as { __fl: { inked: (f?: number) => Promise<number> } }).__fl.inked(f ?? undefined), frame ?? null);
 }
 
-export async function sessionEval<T>(page: Page, fn: string): Promise<T> {
-  return page.evaluate((code) => {
-    const s = (window as unknown as { __fl: { session: () => unknown } }).__fl.session();
-    return new Function('s', `return (${code})`)(s);
-  }, fn) as Promise<T>;
+export async function sessionEval<T>(page: Page, code: string): Promise<T> {
+  // Evaluated through the DevTools protocol, so it works under the app's strict CSP (no eval in the page).
+  return page.evaluate(`(function (s) { return (${code}); })(window.__fl.session())`) as Promise<T>;
 }
 
 export async function frameCount(page: Page): Promise<number> {

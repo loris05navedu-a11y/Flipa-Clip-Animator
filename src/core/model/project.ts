@@ -29,6 +29,8 @@ export interface NewProjectParams {
   frameCount: number;
   background: string;
   transparent: boolean;
+  /** Localised name of the first layer. */
+  layerName?: string;
 }
 
 export function defaultView(width: number, height: number): ViewSettings {
@@ -82,7 +84,7 @@ export function createProject(p: NewProjectParams): ProjectData {
     height,
     fps: clamp(Math.round(p.fps), MIN_FPS, MAX_FPS),
     background: { color: p.background, transparent: p.transparent },
-    layers: [newLayer('Calque 1')],
+    layers: [newLayer(p.layerName ?? 'Calque 1')],
     frames,
     audio: [],
     references: [],

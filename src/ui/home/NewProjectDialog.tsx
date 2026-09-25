@@ -47,7 +47,7 @@ export function NewProjectDialog({ onClose, initial, onCreated, projectCount }: 
   const groups = ['video', 'social', 'square', 'other'] as const;
 
   const submit = async () => {
-    const data = makeProject({ name, width, height, fps, frameCount: frames, background: bg.slice(0, 7), transparent });
+    const data = makeProject({ name, width, height, fps, frameCount: frames, background: bg.slice(0, 7), transparent, layerName: `${t('layers.defaultName')} 1` });
     onClose();
     await createProject(data);
     onCreated?.();

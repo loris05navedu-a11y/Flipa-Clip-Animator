@@ -6,7 +6,7 @@ import { uid } from '../../core/util/id';
 import { getRepo, storageEstimate } from '../../app/services';
 import { openProject, setPendingImport, showError, useApp } from '../../app/store';
 import { relativeDate, useT } from '../../i18n';
-import { pickFiles, saveFile } from '../../platform/platform';
+import { isNative, pickFiles, saveFile } from '../../platform/platform';
 import { readProjectFile, writeProjectFile, PROJECT_EXTENSION, PROJECT_MIME } from '../../core/format/projectFile';
 import { blobToBitmap } from '../../engine/canvas';
 import { dialogs } from '../components/dialogs';
@@ -157,7 +157,8 @@ export function HomeScreen() {
   }, [refresh]);
 
   const importProjectFile = async () => {
-    const [file] = await pickFiles(`${PROJECT_EXTENSION},application/zip,application/octet-stream`);
+    // Android document providers report arbitrary MIME types for .frameloom files: allow everything there.
+    const [file] = await pickFiles(isNative() ? '*/*' : `${PROJECT_EXTENSION},${PROJECT_MIME},application/zip,application/octet-stream`);
     if (!file) return;
     try {
       const repo = await getRepo();
